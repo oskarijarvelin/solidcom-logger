@@ -48,6 +48,9 @@ export const translations = {
     audioChannelCount: "Audio Channels",
     mono: "Mono (1 channel)",
     stereo: "Stereo (2 channels)",
+    audioChannelIndex: "Channel Selection",
+    channelNumber: "Channel",
+    allChannels: "All channels (default)",
     // Download message log
     downloadMessageLog: "Download Message Log",
     downloadAsJson: "Download as JSON",
@@ -103,6 +106,9 @@ export const translations = {
     audioChannelCount: "Äänikanavat",
     mono: "Mono (1 kanava)",
     stereo: "Stereo (2 kanavaa)",
+    audioChannelIndex: "Kanavan valinta",
+    channelNumber: "Kanava",
+    allChannels: "Kaikki kanavat (oletus)",
     // Download message log
     downloadMessageLog: "Lataa viestiloki",
     downloadAsJson: "Lataa JSON-muodossa",

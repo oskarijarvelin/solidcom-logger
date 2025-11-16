@@ -19,6 +19,8 @@ interface SettingsContextType {
   setAudioInputDeviceId: (deviceId: string) => void;
   audioChannelCount: number;
   setAudioChannelCount: (count: number) => void;
+  audioChannelIndex: number;
+  setAudioChannelIndex: (index: number) => void;
   t: (key: TranslationKey) => string;
 }
 
@@ -31,6 +33,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [keywords, setKeywords] = useState<KeywordHighlight[]>([]);
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>("");
   const [audioChannelCount, setAudioChannelCount] = useState<number>(1);
+  const [audioChannelIndex, setAudioChannelIndex] = useState<number>(0);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -40,6 +43,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedKeywords = localStorage.getItem("keywords");
     const savedAudioInputDeviceId = localStorage.getItem("audioInputDeviceId");
     const savedAudioChannelCount = localStorage.getItem("audioChannelCount");
+    const savedAudioChannelIndex = localStorage.getItem("audioChannelIndex");
 
     if (savedLanguage) setLanguage(savedLanguage);
     if (savedTheme) setTheme(savedTheme);
@@ -47,6 +51,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (savedKeywords) setKeywords(JSON.parse(savedKeywords));
     if (savedAudioInputDeviceId) setAudioInputDeviceId(savedAudioInputDeviceId);
     if (savedAudioChannelCount) setAudioChannelCount(parseInt(savedAudioChannelCount));
+    if (savedAudioChannelIndex) setAudioChannelIndex(parseInt(savedAudioChannelIndex));
   }, []);
 
   // Save settings to localStorage
@@ -80,6 +85,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("audioChannelCount", audioChannelCount.toString());
   }, [audioChannelCount]);
 
+  useEffect(() => {
+    localStorage.setItem("audioChannelIndex", audioChannelIndex.toString());
+  }, [audioChannelIndex]);
+
   const addKeyword = (keyword: KeywordHighlight) => {
     setKeywords([...keywords, keyword]);
   };
@@ -109,6 +118,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setAudioInputDeviceId,
         audioChannelCount,
         setAudioChannelCount,
+        audioChannelIndex,
+        setAudioChannelIndex,
         t,
       }}
     >
