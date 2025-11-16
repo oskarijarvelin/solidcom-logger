@@ -25,8 +25,8 @@ export default function Header({ isTranscribing, onToggleTranscription, onOpenSe
             onClick={onToggleTranscription}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
               isTranscribing
-                ? "bg-red-500 hover:bg-red-600 text-white shadow-lg"
-                : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200"
+                ? "bg-green-500 hover:bg-green-600 text-white shadow-lg"
+                : "bg-red-500 hover:bg-red-600 text-white shadow-lg"
             }`}
             aria-label={isTranscribing ? "Turn OFF" : "Turn ON"}
           >
