@@ -28,7 +28,7 @@ type MessageLogEntry = {
 // Export the MicrophoneComponent function component
 export default function MicrophoneComponent() {
   // Settings context
-  const { language, fontSize, keywords, audioInputDeviceId, t } = useSettings();
+  const { language, fontSize, keywords, audioInputDeviceId, audioChannelCount, t } = useSettings();
   
   // State variables to manage transcription status and text
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -85,11 +85,15 @@ export default function MicrophoneComponent() {
     setIsTranscribing(true);
     shouldTranscribeRef.current = true;
     
-    // Request permission for the selected audio device
-    // This ensures the browser uses the correct microphone for speech recognition
+    // Request permission for the selected audio device with channel count
+    // This ensures the browser uses the correct microphone and channel configuration for speech recognition
     try {
+      const audioConstraints: MediaTrackConstraints = audioInputDeviceId 
+        ? { deviceId: { exact: audioInputDeviceId }, channelCount: audioChannelCount }
+        : { channelCount: audioChannelCount };
+      
       const constraints: MediaStreamConstraints = {
-        audio: audioInputDeviceId ? { deviceId: { exact: audioInputDeviceId } } : true
+        audio: audioConstraints
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       // Stop the stream immediately as we only needed to set the active device

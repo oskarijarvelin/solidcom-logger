@@ -17,6 +17,8 @@ interface SettingsContextType {
   removeKeyword: (keyword: string) => void;
   audioInputDeviceId: string;
   setAudioInputDeviceId: (deviceId: string) => void;
+  audioChannelCount: number;
+  setAudioChannelCount: (count: number) => void;
   t: (key: TranslationKey) => string;
 }
 
@@ -28,6 +30,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [keywords, setKeywords] = useState<KeywordHighlight[]>([]);
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>("");
+  const [audioChannelCount, setAudioChannelCount] = useState<number>(1);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -36,12 +39,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedFontSize = localStorage.getItem("fontSize") as "small" | "medium" | "large";
     const savedKeywords = localStorage.getItem("keywords");
     const savedAudioInputDeviceId = localStorage.getItem("audioInputDeviceId");
+    const savedAudioChannelCount = localStorage.getItem("audioChannelCount");
 
     if (savedLanguage) setLanguage(savedLanguage);
     if (savedTheme) setTheme(savedTheme);
     if (savedFontSize) setFontSize(savedFontSize);
     if (savedKeywords) setKeywords(JSON.parse(savedKeywords));
     if (savedAudioInputDeviceId) setAudioInputDeviceId(savedAudioInputDeviceId);
+    if (savedAudioChannelCount) setAudioChannelCount(parseInt(savedAudioChannelCount));
   }, []);
 
   // Save settings to localStorage
@@ -71,6 +76,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("audioInputDeviceId", audioInputDeviceId);
   }, [audioInputDeviceId]);
 
+  useEffect(() => {
+    localStorage.setItem("audioChannelCount", audioChannelCount.toString());
+  }, [audioChannelCount]);
+
   const addKeyword = (keyword: KeywordHighlight) => {
     setKeywords([...keywords, keyword]);
   };
@@ -98,6 +107,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         removeKeyword,
         audioInputDeviceId,
         setAudioInputDeviceId,
+        audioChannelCount,
+        setAudioChannelCount,
         t,
       }}
     >

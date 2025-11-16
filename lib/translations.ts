@@ -45,6 +45,9 @@ export const translations = {
     selectAudioDevice: "Select audio input device",
     defaultDevice: "Default",
     noDevicesFound: "No audio devices found",
+    audioChannelCount: "Audio Channels",
+    mono: "Mono (1 channel)",
+    stereo: "Stereo (2 channels)",
     // Download message log
     downloadMessageLog: "Download Message Log",
     downloadAsJson: "Download as JSON",
@@ -97,6 +100,9 @@ export const translations = {
     selectAudioDevice: "Valitse äänen sisääntulolaite",
     defaultDevice: "Oletus",
     noDevicesFound: "Äänilaitteita ei löytynyt",
+    audioChannelCount: "Äänikanavat",
+    mono: "Mono (1 kanava)",
+    stereo: "Stereo (2 kanavaa)",
     // Download message log
     downloadMessageLog: "Lataa viestiloki",
     downloadAsJson: "Lataa JSON-muodossa",

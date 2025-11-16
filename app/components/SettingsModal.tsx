@@ -20,7 +20,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsModalProps) {
-  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, t } = useSettings();
+  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, audioChannelCount, setAudioChannelCount, t } = useSettings();
   const [newKeyword, setNewKeyword] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -276,6 +276,35 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
                 {t("noDevicesFound")}
               </p>
             )}
+          </div>
+
+          {/* Audio Channel Count Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("audioChannelCount")}
+            </label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setAudioChannelCount(1)}
+                className={`px-4 py-2 rounded-lg border transition-colors ${
+                  audioChannelCount === 1
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                }`}
+              >
+                {t("mono")}
+              </button>
+              <button
+                onClick={() => setAudioChannelCount(2)}
+                className={`px-4 py-2 rounded-lg border transition-colors ${
+                  audioChannelCount === 2
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                }`}
+              >
+                {t("stereo")}
+              </button>
+            </div>
           </div>
 
           {/* Keyword Highlighting */}
