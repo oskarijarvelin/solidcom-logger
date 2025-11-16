@@ -31,6 +31,8 @@ export default function MicrophoneComponent() {
 
   // Reference to store the SpeechRecognition instance
   const recognitionRef = useRef<any>(null);
+  // Reference to track if we should be transcribing (for auto-restart logic)
+  const shouldTranscribeRef = useRef(false);
 
   // Helper function to format timestamp
   const formatTimestamp = (date: Date): string => {
@@ -50,6 +52,7 @@ export default function MicrophoneComponent() {
   // Function to start transcription
   const startTranscription = () => {
     setIsTranscribing(true);
+    shouldTranscribeRef.current = true;
     // Create a new SpeechRecognition instance and configure it
     recognitionRef.current = new window.webkitSpeechRecognition();
     recognitionRef.current.continuous = true;
@@ -66,10 +69,10 @@ export default function MicrophoneComponent() {
       //console.log(event.results);
       setTranscriptionText(transcript);
 
-      // If the result is final, add it to the message log
+      // If the result is final, add it to the message log (newest first)
       if (isFinal && transcript.trim()) {
         const timestamp = formatTimestamp(new Date());
-        setMessageLog(prev => [...prev, { text: transcript, timestamp }]);
+        setMessageLog(prev => [{ text: transcript, timestamp }, ...prev]);
       }
 
       // Check for predefined commands
@@ -78,6 +81,40 @@ export default function MicrophoneComponent() {
           commands[command]();
           break;
         }
+      }
+    };
+
+    // Event handler for errors to prevent freezing
+    recognitionRef.current.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      // Auto-restart on certain errors if still transcribing
+      if (event.error === 'no-speech' || event.error === 'audio-capture' || event.error === 'network') {
+        console.log('Attempting to restart recognition due to:', event.error);
+        setTimeout(() => {
+          if (recognitionRef.current && shouldTranscribeRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              console.error('Failed to restart recognition:', e);
+            }
+          }
+        }, 100);
+      }
+    };
+
+    // Event handler for when recognition ends unexpectedly
+    recognitionRef.current.onend = () => {
+      console.log('Speech recognition ended');
+      // Auto-restart if we're still supposed to be transcribing
+      if (shouldTranscribeRef.current && recognitionRef.current) {
+        console.log('Auto-restarting recognition...');
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.error('Failed to restart recognition:', e);
+          }
+        }, 100);
       }
     };
 
@@ -98,6 +135,8 @@ export default function MicrophoneComponent() {
   // Function to stop transcription
   const stopTranscription = () => {
     if (recognitionRef.current) {
+      // Disable auto-restart before stopping
+      shouldTranscribeRef.current = false;
       // Stop the speech recognition and mark transcription as complete
       recognitionRef.current.stop();
       setTranscriptionComplete(true);
