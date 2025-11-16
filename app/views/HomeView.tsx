@@ -43,6 +43,10 @@ export default function MicrophoneComponent() {
   const recognitionRef = useRef<any>(null);
   // Reference to track if we should be transcribing (for auto-restart logic)
   const shouldTranscribeRef = useRef(false);
+  // Reference to accumulate transcript before adding to message log (for mobile device debouncing)
+  const accumulatedTranscriptRef = useRef("");
+  // Reference to store the debounce timer for finalizing messages
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Helper function to format timestamp
   const formatTimestamp = (date: Date): string => {
@@ -114,19 +118,44 @@ export default function MicrophoneComponent() {
       //console.log(event.results);
       setTranscriptionText(transcript);
 
-      // If the result is final, add it to the message log (newest first)
+      // If the result is final, use debounce logic to group words into complete sentences
+      // This is especially important on mobile Chrome which treats each word as final
       if (isFinal && transcript.trim()) {
-        const now = new Date();
-        const timestamp = formatTimestamp(now);
-        setMessageLog(prev => [{ text: transcript, timestamp, createdAt: now }, ...prev]);
-      }
-
-      // Check for predefined commands
-      for (const command in commands) {
-        if (transcript.toLowerCase().includes(command)) {
-          commands[command]();
-          break;
+        // Clear any existing debounce timer
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
         }
+
+        // Accumulate the transcript
+        if (accumulatedTranscriptRef.current) {
+          // Add space if we already have accumulated text
+          accumulatedTranscriptRef.current += " " + transcript.trim();
+        } else {
+          accumulatedTranscriptRef.current = transcript.trim();
+        }
+
+        // Set a debounce timer to add the accumulated transcript to the message log
+        // Wait 1.5 seconds after the last final result before committing to the log
+        // This groups words into complete sentences on mobile devices
+        debounceTimerRef.current = setTimeout(() => {
+          if (accumulatedTranscriptRef.current.trim()) {
+            const now = new Date();
+            const timestamp = formatTimestamp(now);
+            setMessageLog(prev => [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev]);
+            
+            // Check for predefined commands
+            for (const command in commands) {
+              if (accumulatedTranscriptRef.current.toLowerCase().includes(command)) {
+                commands[command]();
+                break;
+              }
+            }
+            
+            // Clear the accumulated transcript
+            accumulatedTranscriptRef.current = "";
+          }
+          debounceTimerRef.current = null;
+        }, 1500);
       }
     };
 
@@ -176,6 +205,10 @@ export default function MicrophoneComponent() {
   // Cleanup effect when the component unmounts
   useEffect(() => {
     return () => {
+      // Clear any pending debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
       // Stop the speech recognition if it's active
       if (recognitionRef.current) {
         recognitionRef.current.stop();
@@ -186,6 +219,20 @@ export default function MicrophoneComponent() {
   // Effect to restart speech recognition when language changes during active recording
   useEffect(() => {
     if (isTranscribing && recognitionRef.current) {
+      // Clear any pending debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      
+      // Flush any accumulated transcript before restarting
+      if (accumulatedTranscriptRef.current.trim()) {
+        const now = new Date();
+        const timestamp = formatTimestamp(now);
+        setMessageLog(prev => [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev]);
+        accumulatedTranscriptRef.current = "";
+      }
+      
       // Stop current recognition
       shouldTranscribeRef.current = false;
       recognitionRef.current.stop();
@@ -222,6 +269,21 @@ export default function MicrophoneComponent() {
     if (recognitionRef.current) {
       // Disable auto-restart before stopping
       shouldTranscribeRef.current = false;
+      
+      // Clear any pending debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      
+      // Flush any accumulated transcript to the message log
+      if (accumulatedTranscriptRef.current.trim()) {
+        const now = new Date();
+        const timestamp = formatTimestamp(now);
+        setMessageLog(prev => [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev]);
+        accumulatedTranscriptRef.current = "";
+      }
+      
       // Stop the speech recognition and mark transcription as complete
       recognitionRef.current.stop();
       setTranscriptionComplete(true);
