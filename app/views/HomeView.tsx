@@ -116,7 +116,14 @@ export default function MicrophoneComponent() {
 
       // Log the recognition results and update the transcript state
       //console.log(event.results);
-      setTranscriptionText(transcript);
+      
+      // Show accumulated text + current transcript in real-time display
+      // This helps users see the complete sentence being built up before it's saved to the log
+      if (accumulatedTranscriptRef.current) {
+        setTranscriptionText(accumulatedTranscriptRef.current + " " + transcript);
+      } else {
+        setTranscriptionText(transcript);
+      }
 
       // If the result is final, use debounce logic to group words into complete sentences
       // This is especially important on mobile Chrome which treats each word as final
