@@ -36,6 +36,8 @@ export default function MicrophoneComponent() {
   const [transcriptionText, setTranscriptionText] = useState("");
   const [messageLog, setMessageLog] = useState<MessageLogEntry[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFirefox, setIsFirefox] = useState(false);
+  const [showFirefoxWarning, setShowFirefoxWarning] = useState(true);
 
   // Reference to store the SpeechRecognition instance
   const recognitionRef = useRef<any>(null);
@@ -60,11 +62,11 @@ export default function MicrophoneComponent() {
     const diffHours = Math.floor(diffMinutes / 60);
     
     if (diffSeconds < 60) {
-      return diffSeconds <= 1 ? 'just now' : `${diffSeconds} seconds ago`;
+      return diffSeconds <= 1 ? t("justNow") : `${diffSeconds} ${t("secondsAgo")}`;
     } else if (diffMinutes < 60) {
-      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`;
+      return diffMinutes === 1 ? t("oneMinuteAgo") : `${diffMinutes} ${t("minutesAgo")}`;
     } else {
-      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+      return diffHours === 1 ? t("oneHourAgo") : `${diffHours} ${t("hoursAgo")}`;
     }
   };
 
@@ -157,6 +159,12 @@ export default function MicrophoneComponent() {
         recognitionRef.current.stop();
       }
     };
+  }, []);
+
+  // Detect Firefox browser
+  useEffect(() => {
+    const isFirefoxBrowser = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
+    setIsFirefox(isFirefoxBrowser);
   }, []);
 
   // Effect to update relative time every second
@@ -289,6 +297,36 @@ export default function MicrophoneComponent() {
 
       <div className="flex flex-col h-screen w-full pt-16">
         <div className="w-full px-4 flex-1 flex flex-col">
+          {/* Firefox Warning */}
+          {isFirefox && showFirefoxWarning && (
+            <div className="w-full md:max-w-7xl m-auto bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-4 my-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-400 mb-1">
+                      {t("firefoxWarningShort")}
+                    </h3>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                      {t("firefoxWarning")}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowFirefoxWarning(false)}
+                  className="p-1 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800/30 transition-colors flex-shrink-0"
+                  aria-label="Close warning"
+                >
+                  <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
           {/* Message Log Display */}
           {messageLog.length > 0 && (
             <div className="w-full md:max-w-7xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 my-4 flex-1 overflow-y-auto">

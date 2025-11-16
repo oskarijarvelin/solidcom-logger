@@ -22,6 +22,23 @@ export const translations = {
     remove: "Remove",
     close: "Close",
     save: "Save",
+    // Time-related strings
+    justNow: "just now",
+    secondsAgo: "seconds ago",
+    oneMinuteAgo: "1 minute ago",
+    minutesAgo: "minutes ago",
+    oneHourAgo: "1 hour ago",
+    hoursAgo: "hours ago",
+    // Font size options
+    small: "Small",
+    medium: "Medium",
+    large: "Large",
+    // Language names
+    english: "English",
+    finnish: "Suomi",
+    // Firefox warning
+    firefoxWarning: "Warning: This application does not work properly in Firefox. Please use Chrome, Edge, or Safari for the best experience.",
+    firefoxWarningShort: "Firefox is not supported",
   },
   fi: {
     appName: "Intercom Logger",
@@ -45,6 +62,23 @@ export const translations = {
     remove: "Poista",
     close: "Sulje",
     save: "Tallenna",
+    // Time-related strings
+    justNow: "juuri nyt",
+    secondsAgo: "sekuntia sitten",
+    oneMinuteAgo: "1 minuutti sitten",
+    minutesAgo: "minuuttia sitten",
+    oneHourAgo: "1 tunti sitten",
+    hoursAgo: "tuntia sitten",
+    // Font size options
+    small: "Pieni",
+    medium: "Keskikokoinen",
+    large: "Suuri",
+    // Language names
+    english: "English",
+    finnish: "Suomi",
+    // Firefox warning
+    firefoxWarning: "Varoitus: Tämä sovellus ei toimi kunnolla Firefoxissa. Käytä Chromea, Edgeä tai Safaria parhaan kokemuksen saamiseksi.",
+    firefoxWarningShort: "Firefox ei ole tuettu",
   },
 };
 
