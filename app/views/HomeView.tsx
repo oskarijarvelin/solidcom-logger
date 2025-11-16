@@ -101,6 +101,8 @@ export default function MicrophoneComponent() {
     // Set language based on user settings
     recognitionRef.current.lang = language === "fi" ? "fi-FI" : "en-US";
     recognitionRef.current.interimResults = true;
+    // Set maxAlternatives for better accuracy on mobile devices
+    recognitionRef.current.maxAlternatives = 1;
 
     // Event handler for speech recognition results
     recognitionRef.current.onresult = (event: any) => {
@@ -132,8 +134,11 @@ export default function MicrophoneComponent() {
     recognitionRef.current.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       // Auto-restart on certain errors if still transcribing
-      if (event.error === 'no-speech' || event.error === 'audio-capture' || event.error === 'network') {
+      // Note: 'aborted' error is common on mobile devices and should trigger restart
+      if (event.error === 'no-speech' || event.error === 'audio-capture' || event.error === 'network' || event.error === 'aborted') {
         console.log('Attempting to restart recognition due to:', event.error);
+        // Use longer delay (1000ms) for better mobile device compatibility
+        // Mobile browsers need more time between recognition sessions
         setTimeout(() => {
           if (recognitionRef.current && shouldTranscribeRef.current) {
             try {
@@ -142,7 +147,7 @@ export default function MicrophoneComponent() {
               console.error('Failed to restart recognition:', e);
             }
           }
-        }, 100);
+        }, 1000);
       }
     };
 
@@ -152,13 +157,15 @@ export default function MicrophoneComponent() {
       // Auto-restart if we're still supposed to be transcribing
       if (shouldTranscribeRef.current && recognitionRef.current) {
         console.log('Auto-restarting recognition...');
+        // Use longer delay (1000ms) for better mobile device compatibility
+        // Mobile browsers need more time between recognition sessions
         setTimeout(() => {
           try {
             recognitionRef.current.start();
           } catch (e) {
             console.error('Failed to restart recognition:', e);
           }
-        }, 100);
+        }, 1000);
       }
     };
 
