@@ -28,7 +28,7 @@ type MessageLogEntry = {
 // Export the MicrophoneComponent function component
 export default function MicrophoneComponent() {
   // Settings context
-  const { language, fontSize, keywords, t } = useSettings();
+  const { language, fontSize, keywords, audioInputDeviceId, t } = useSettings();
   
   // State variables to manage transcription status and text
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -77,9 +77,24 @@ export default function MicrophoneComponent() {
   };
 
   // Function to start transcription
-  const startTranscription = () => {
+  const startTranscription = async () => {
     setIsTranscribing(true);
     shouldTranscribeRef.current = true;
+    
+    // Request permission for the selected audio device
+    // This ensures the browser uses the correct microphone for speech recognition
+    try {
+      const constraints: MediaStreamConstraints = {
+        audio: audioInputDeviceId ? { deviceId: { exact: audioInputDeviceId } } : true
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // Stop the stream immediately as we only needed to set the active device
+      stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+      console.error('Error accessing audio device:', error);
+      // Continue anyway with default device
+    }
+    
     // Create a new SpeechRecognition instance and configure it
     recognitionRef.current = new window.webkitSpeechRecognition();
     recognitionRef.current.continuous = true;

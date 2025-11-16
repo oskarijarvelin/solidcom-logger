@@ -15,6 +15,8 @@ interface SettingsContextType {
   setKeywords: (keywords: KeywordHighlight[]) => void;
   addKeyword: (keyword: KeywordHighlight) => void;
   removeKeyword: (keyword: string) => void;
+  audioInputDeviceId: string;
+  setAudioInputDeviceId: (deviceId: string) => void;
   t: (key: TranslationKey) => string;
 }
 
@@ -25,6 +27,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [keywords, setKeywords] = useState<KeywordHighlight[]>([]);
+  const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>("");
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -32,11 +35,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark";
     const savedFontSize = localStorage.getItem("fontSize") as "small" | "medium" | "large";
     const savedKeywords = localStorage.getItem("keywords");
+    const savedAudioInputDeviceId = localStorage.getItem("audioInputDeviceId");
 
     if (savedLanguage) setLanguage(savedLanguage);
     if (savedTheme) setTheme(savedTheme);
     if (savedFontSize) setFontSize(savedFontSize);
     if (savedKeywords) setKeywords(JSON.parse(savedKeywords));
+    if (savedAudioInputDeviceId) setAudioInputDeviceId(savedAudioInputDeviceId);
   }, []);
 
   // Save settings to localStorage
@@ -61,6 +66,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem("keywords", JSON.stringify(keywords));
   }, [keywords]);
+
+  useEffect(() => {
+    localStorage.setItem("audioInputDeviceId", audioInputDeviceId);
+  }, [audioInputDeviceId]);
 
   const addKeyword = (keyword: KeywordHighlight) => {
     setKeywords([...keywords, keyword]);
@@ -87,6 +96,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setKeywords,
         addKeyword,
         removeKeyword,
+        audioInputDeviceId,
+        setAudioInputDeviceId,
         t,
       }}
     >

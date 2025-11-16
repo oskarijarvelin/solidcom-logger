@@ -39,6 +39,11 @@ export const translations = {
     // Firefox warning
     firefoxWarning: "Warning: This application does not work properly in Firefox. Please use Chrome, Edge, or Safari for the best experience.",
     firefoxWarningShort: "Firefox is not supported",
+    // Audio device selection
+    audioInputDevice: "Audio Input Device",
+    selectAudioDevice: "Select audio input device",
+    defaultDevice: "Default",
+    noDevicesFound: "No audio devices found",
   },
   fi: {
     appName: "Intercom Logger",
@@ -79,6 +84,11 @@ export const translations = {
     // Firefox warning
     firefoxWarning: "Varoitus: Tämä sovellus ei toimi kunnolla Firefoxissa. Käytä Chromea, Edgeä tai Safaria parhaan kokemuksen saamiseksi.",
     firefoxWarningShort: "Firefox ei ole tuettu",
+    // Audio device selection
+    audioInputDevice: "Äänen sisääntulo",
+    selectAudioDevice: "Valitse äänen sisääntulolaite",
+    defaultDevice: "Oletus",
+    noDevicesFound: "Äänilaitteita ei löytynyt",
   },
 };
 
