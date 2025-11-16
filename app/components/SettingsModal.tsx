@@ -335,10 +335,6 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
                 ))}
               </div>
             )}
-
-            <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
-              <p>&copy; 2025: <a href="https://oskarijarvelin.fi" target="_blank" rel="noopener noreferrer" className="underline">Oskari Järvelin</a></p>
-            </div>
           </div>
 
           {/* Download Message Log */}
@@ -367,6 +363,11 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
                 {t("noMessagesToDownload")}
               </p>
             )}
+          </div>
+
+          {/* Copyright */}
+          <div className="text-center text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p>&copy; 2025: <a href="https://oskarijarvelin.fi" target="_blank" rel="noopener noreferrer" className="underline">Oskari Järvelin</a></p>
           </div>
         </div>
 
