@@ -15,15 +15,30 @@ type Commands = {
   [key: string]: CommandFunction;
 };
 
+// Define the type for message log entries
+type MessageLogEntry = {
+  text: string;
+  timestamp: string;
+};
+
 // Export the MicrophoneComponent function component
 export default function MicrophoneComponent() {
   // State variables to manage transcription status and text
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionComplete, setTranscriptionComplete] = useState(false);
   const [transcriptionText, setTranscriptionText] = useState("");
+  const [messageLog, setMessageLog] = useState<MessageLogEntry[]>([]);
 
   // Reference to store the SpeechRecognition instance
   const recognitionRef = useRef<any>(null);
+
+  // Helper function to format timestamp
+  const formatTimestamp = (date: Date): string => {
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   // Predefined commands
   const commands: Commands = {
@@ -43,11 +58,19 @@ export default function MicrophoneComponent() {
 
     // Event handler for speech recognition results
     recognitionRef.current.onresult = (event: any) => {
-      const { transcript } = event.results[event.results.length - 1][0];
+      const lastResult = event.results[event.results.length - 1];
+      const { transcript } = lastResult[0];
+      const isFinal = lastResult.isFinal;
 
       // Log the recognition results and update the transcript state
       console.log(event.results);
       setTranscriptionText(transcript);
+
+      // If the result is final, add it to the message log
+      if (isFinal && transcript.trim()) {
+        const timestamp = formatTimestamp(new Date());
+        setMessageLog(prev => [...prev, { text: transcript, timestamp }]);
+      }
 
       // Check for predefined commands
       for (const command in commands) {
@@ -118,6 +141,23 @@ export default function MicrophoneComponent() {
                 <p className="mb-0">{transcriptionText}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Message Log Display */}
+        {messageLog.length > 0 && (
+          <div className="w-1/2 m-auto rounded-md border p-4 bg-white mt-4 max-h-96 overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-3">Message Log</h3>
+            <div className="space-y-2">
+              {messageLog.map((entry, index) => (
+                <div key={index} className="border-b pb-2 last:border-b-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <p className="text-sm flex-1">{entry.text}</p>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">{entry.timestamp}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
