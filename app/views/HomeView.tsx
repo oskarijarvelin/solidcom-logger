@@ -190,7 +190,13 @@ export default function MicrophoneComponent() {
           if (accumulatedTranscriptRef.current.trim()) {
             const now = new Date();
             const timestamp = formatTimestamp(now);
-            setMessageLog(prev => [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev]);
+            console.log('Adding to message log:', accumulatedTranscriptRef.current);
+            setMessageLog(prev => {
+              console.log('Previous messageLog:', prev);
+              const newLog = [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev];
+              console.log('New messageLog:', newLog);
+              return newLog;
+            });
             
             // Check for predefined commands
             for (const command in commands) {
