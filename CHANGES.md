@@ -1,6 +1,36 @@
 # Changes Summary
 
-## 1. Reversed Log Order
+## 1. Mobile Chrome Word-by-Word Message Fix
+
+**What was the problem:**
+On mobile Chrome, the Web Speech API treats each word as a separate "final" result instead of grouping words into complete sentences. This caused the application to create a new message log entry for every single word spoken, making the message log cluttered and difficult to read.
+
+**What changed:**
+Implemented a debounce mechanism that accumulates speech transcripts and waits for a pause (1.5 seconds) before adding them to the message log. This groups words into complete sentences or phrases, providing a much better user experience on mobile devices.
+
+**How it works:**
+1. When a final result is received, it's accumulated in a temporary buffer instead of being immediately added to the log
+2. A 1.5-second debounce timer is started (or reset if already running)
+3. If more speech is detected within 1.5 seconds, the new words are appended to the accumulated text
+4. When 1.5 seconds pass without new speech, the complete accumulated sentence is added to the message log
+5. When transcription is stopped or language is changed, any pending accumulated text is immediately flushed to the log
+
+**How to test:**
+1. Open the application on a mobile device (Android Chrome is best for testing)
+2. Start recording and speak continuously: "Hello world this is a test"
+3. Verify that the words are grouped into complete sentences in the message log
+4. Before the fix: You would see 6 separate entries ("Hello", "world", "this", "is", "a", "test")
+5. After the fix: You should see 1 entry ("Hello world this is a test")
+6. Test stopping transcription while speaking - the accumulated text should be saved
+
+**Code changes:** In `app/views/HomeView.tsx`
+- Lines 46-49: Added `accumulatedTranscriptRef` and `debounceTimerRef` to track accumulated text and debounce timer
+- Lines 121-159: Updated `onresult` handler to use debounce logic instead of immediately adding to log
+- Lines 208-211: Updated cleanup effect to clear debounce timer
+- Lines 222-234: Updated language change effect to flush accumulated text
+- Lines 273-285: Updated `stopTranscription` to flush accumulated text before stopping
+
+## 2. Reversed Log Order
 
 **What changed:** Message log now displays newest messages at the top instead of at the bottom.
 
@@ -21,7 +51,7 @@ setMessageLog(prev => [...prev, { text: transcript, timestamp }]);
 setMessageLog(prev => [{ text: transcript, timestamp }, ...prev]);
 ```
 
-## 2. Speech Recognition Freeze Prevention
+## 3. Speech Recognition Freeze Prevention
 
 **What was the problem:**
 The Web Speech API can stop unexpectedly due to:
@@ -58,7 +88,7 @@ When this happens, the UI shows no indication - it just silently stops transcrib
 - Updated `startTranscription` to set `shouldTranscribeRef.current = true`
 - Updated `stopTranscription` to set `shouldTranscribeRef.current = false` before stopping
 
-## 3. Mobile Device Transcription Improvements
+## 4. Mobile Device Transcription Improvements
 
 **What was the problem:**
 Recording on mobile devices (iOS Safari, Android Chrome) was slow and buggy due to:
