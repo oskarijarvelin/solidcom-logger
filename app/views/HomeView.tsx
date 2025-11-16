@@ -165,7 +165,13 @@ export default function MicrophoneComponent() {
       // Log the recognition results and update the transcript state
       //console.log(event.results);
       
-      setTranscriptionText(transcript);
+      // Show accumulated text + current transcript in real-time display
+      // This helps users see the complete sentence being built up before it's saved to the log
+      if (accumulatedTranscriptRef.current) {
+        setTranscriptionText(accumulatedTranscriptRef.current + " " + transcript);
+      } else {
+        setTranscriptionText(transcript);
+      }
 
       // If the result is final, use debounce logic to group words into complete sentences
       // This is especially important on mobile Chrome which treats each word as final
@@ -187,14 +193,18 @@ export default function MicrophoneComponent() {
         // Wait 1.5 seconds after the last final result before committing to the log
         // This groups words into complete sentences on mobile devices
         debounceTimerRef.current = setTimeout(() => {
-          if (accumulatedTranscriptRef.current.trim()) {
+          const accumulatedText = accumulatedTranscriptRef.current.trim();
+          if (accumulatedText) {
             const now = new Date();
             const timestamp = formatTimestamp(now);
-            setMessageLog(prev => [{ text: accumulatedTranscriptRef.current, timestamp, createdAt: now }, ...prev]);
+            setMessageLog(prev => [{ text: accumulatedText, timestamp, createdAt: now }, ...prev]);
+            
+            // Clear the real-time transcription display since the message has been logged
+            setTranscriptionText("");
             
             // Check for predefined commands
             for (const command in commands) {
-              if (accumulatedTranscriptRef.current.toLowerCase().includes(command)) {
+              if (accumulatedText.toLowerCase().includes(command)) {
                 commands[command]();
                 break;
               }
