@@ -63,7 +63,7 @@ export default function MicrophoneComponent() {
       const isFinal = lastResult.isFinal;
 
       // Log the recognition results and update the transcript state
-      console.log(event.results);
+      //console.log(event.results);
       setTranscriptionText(transcript);
 
       // If the result is final, add it to the message log
