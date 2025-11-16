@@ -44,6 +44,11 @@ export const translations = {
     selectAudioDevice: "Select audio input device",
     defaultDevice: "Default",
     noDevicesFound: "No audio devices found",
+    // Download message log
+    downloadMessageLog: "Download Message Log",
+    downloadAsJson: "Download as JSON",
+    downloadAsPdf: "Download as PDF",
+    noMessagesToDownload: "No messages to download",
   },
   fi: {
     appName: "Intercom Logger",
@@ -89,6 +94,11 @@ export const translations = {
     selectAudioDevice: "Valitse äänen sisääntulolaite",
     defaultDevice: "Oletus",
     noDevicesFound: "Äänilaitteita ei löytynyt",
+    // Download message log
+    downloadMessageLog: "Lataa viestiloki",
+    downloadAsJson: "Lataa JSON-muodossa",
+    downloadAsPdf: "Lataa PDF-muodossa",
+    noMessagesToDownload: "Ei ladattavia viestejä",
   },
 };
 

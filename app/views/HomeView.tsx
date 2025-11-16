@@ -308,6 +308,7 @@ export default function MicrophoneComponent() {
       <SettingsModal 
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        messageLog={messageLog}
       />
 
       <div className="flex flex-col h-screen w-full pt-16">

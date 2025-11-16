@@ -4,13 +4,22 @@ import React, { useState, useEffect } from "react";
 import { useSettings } from "@/lib/SettingsContext";
 import { colorOptions } from "@/lib/colors";
 import { Language } from "@/lib/translations";
+import jsPDF from "jspdf";
+
+// Define the type for message log entries
+type MessageLogEntry = {
+  text: string;
+  timestamp: string;
+  createdAt: Date;
+};
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  messageLog: MessageLogEntry[];
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsModalProps) {
   const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, t } = useSettings();
   const [newKeyword, setNewKeyword] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
@@ -52,6 +61,81 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       setNewKeyword("");
       setSelectedColor(colorOptions[0]);
     }
+  };
+
+  const handleDownloadJson = () => {
+    if (messageLog.length === 0) return;
+
+    const dataStr = JSON.stringify(messageLog, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `intercom-logger-${new Date().toISOString().split('T')[0]}.json`;
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleDownloadPdf = () => {
+    if (messageLog.length === 0) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const lineHeight = 7;
+    const maxWidth = pageWidth - 2 * margin;
+    let yPosition = margin;
+
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Intercom Logger - Message Log", margin, yPosition);
+    yPosition += 10;
+
+    // Date
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition);
+    yPosition += 10;
+
+    // Separator
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 8;
+
+    // Messages (newest first, as they appear in messageLog)
+    doc.setFontSize(9);
+    messageLog.forEach((entry, index) => {
+      // Check if we need a new page
+      if (yPosition > pageHeight - margin - 20) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      // Timestamp
+      doc.setFont("helvetica", "bold");
+      doc.text(`[${entry.timestamp}]`, margin, yPosition);
+      yPosition += lineHeight;
+
+      // Message text with word wrapping
+      doc.setFont("helvetica", "normal");
+      const lines = doc.splitTextToSize(entry.text, maxWidth);
+      lines.forEach((line: string) => {
+        if (yPosition > pageHeight - margin - 10) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        doc.text(line, margin, yPosition);
+        yPosition += lineHeight;
+      });
+
+      // Add spacing between messages
+      yPosition += 3;
+    });
+
+    // Save the PDF
+    doc.save(`intercom-logger-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   return (
@@ -255,6 +339,34 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
               <p>&copy; 2025: <a href="https://oskarijarvelin.fi" target="_blank" rel="noopener noreferrer" className="underline">Oskari Järvelin</a></p>
             </div>
+          </div>
+
+          {/* Download Message Log */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("downloadMessageLog")}
+            </label>
+            
+            {messageLog.length > 0 ? (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleDownloadJson}
+                  className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  {t("downloadAsJson")}
+                </button>
+                <button
+                  onClick={handleDownloadPdf}
+                  className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
+                >
+                  {t("downloadAsPdf")}
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t("noMessagesToDownload")}
+              </p>
+            )}
           </div>
         </div>
 
