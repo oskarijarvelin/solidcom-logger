@@ -6,6 +6,10 @@ import { SettingsProvider } from '@/lib/SettingsContext'
 export const metadata: Metadata = {
   title: 'Intercom Logger',
   description: 'Voice to text logger application',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

@@ -1,0 +1,21 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="24" cy="24" r="24" fill="#2563eb"/>
+  
+  <!-- Intercom device body -->
+  <rect x="12" y="16" width="24" height="16" rx="4" fill="white"/>
+  
+  <!-- Speaker grilles -->
+  <rect x="15" y="19" width="18" height="1" rx="0.5" fill="#2563eb"/>
+  <rect x="15" y="21" width="18" height="1" rx="0.5" fill="#2563eb"/>
+  <rect x="15" y="23" width="18" height="1" rx="0.5" fill="#2563eb"/>
+  
+  <!-- Microphone -->
+  <circle cx="24" cy="27" r="2" fill="#2563eb"/>
+  
+  <!-- LED indicator -->
+  <circle cx="18" cy="19" r="1" fill="#22c55e"/>
+  
+  <!-- Button -->
+  <rect x="28" y="17.5" width="3" height="3" rx="1.5" fill="#dc2626"/>
+</svg>
