@@ -329,7 +329,7 @@ export default function MicrophoneComponent() {
           
           {/* Message Log Display */}
           {messageLog.length > 0 && (
-            <div className="w-full md:max-w-7xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 my-4 flex-1 overflow-y-auto">
+            <div className="w-full md:max-w-7xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 my-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 64px - 2rem)' }}>
               <h3 className={`font-md font-semibold mb-3 text-gray-900 dark:text-white`}>
                 {t("messageLog")}
               </h3>
