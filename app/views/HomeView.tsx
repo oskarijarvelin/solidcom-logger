@@ -232,44 +232,16 @@ export default function MicrophoneComponent() {
 
       <div className="flex items-center justify-center h-screen w-full pt-16">
         <div className="w-full px-4">
-          {(isTranscribing || transcriptionText) && (
-            <div className="max-w-2xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-              <div className="flex-1 flex w-full justify-between">
-                <div className="space-y-1">
-                  <p className={`${getFontSizeClass()} font-medium leading-none text-gray-900 dark:text-white`}>
-                    {transcriptionComplete ? t("transcriptionComplete") : t("transcribing")}
-                  </p>
-                  <p className={`${getFontSizeClass()} text-gray-600 dark:text-gray-400`}>
-                    {transcriptionComplete
-                      ? t("thanksForSpeaking")
-                      : t("speakNow")}
-                  </p>
-                </div>
-                {isTranscribing && (
-                  <div className="rounded-full w-4 h-4 bg-red-400 animate-pulse" />
-                )}
-              </div>
-
-              {transcriptionText && (
-                <div className="border border-gray-200 dark:border-gray-700 rounded-md p-2 mt-4 bg-gray-50 dark:bg-gray-900">
-                  <p className={`${getFontSizeClass()} mb-0 text-gray-900 dark:text-white`}>
-                    {highlightKeywords(transcriptionText)}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Message Log Display */}
           {messageLog.length > 0 && (
             <div className="max-w-3xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 mt-4 max-h-96 overflow-y-auto">
-              <h3 className={`${getFontSizeClass()} font-semibold mb-3 text-gray-900 dark:text-white`}>
+              <h3 className={`font-md font-semibold mb-3 text-gray-900 dark:text-white`}>
                 {t("messageLog")}
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {messageLog.map((entry, index) => (
-                  <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-2 last:border-b-0">
-                    <div className="flex justify-between items-start gap-2">
+                  <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
+                    <div className="flex justify-between items-start gap-4">
                       <p className={`${getFontSizeClass()} flex-1 text-gray-900 dark:text-white`}>
                         {highlightKeywords(entry.text)}
                       </p>
