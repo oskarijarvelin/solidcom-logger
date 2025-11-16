@@ -61,7 +61,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                 }`}
               >
-                English
+                {t("english")}
               </button>
               <button
                 onClick={() => setLanguage("fi")}
@@ -71,7 +71,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                 }`}
               >
-                Suomi
+                {t("finnish")}
               </button>
             </div>
           </div>
@@ -119,7 +119,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                 }`}
               >
-                Small
+                {t("small")}
               </button>
               <button
                 onClick={() => setFontSize("medium")}
@@ -129,7 +129,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                 }`}
               >
-                Medium
+                {t("medium")}
               </button>
               <button
                 onClick={() => setFontSize("large")}
@@ -139,7 +139,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
                 }`}
               >
-                Large
+                {t("large")}
               </button>
             </div>
           </div>
