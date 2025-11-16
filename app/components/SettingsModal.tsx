@@ -201,6 +201,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 ))}
               </div>
             )}
+
+            <div className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400">
+              <p>&copy; 2025: <a href="https://oskarijarvelin.fi" target="_blank" rel="noopener noreferrer" className="underline">Oskari Järvelin</a></p>
+            </div>
           </div>
         </div>
 
