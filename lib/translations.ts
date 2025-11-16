@@ -102,8 +102,8 @@ export const translations = {
     firefoxWarning: "Varoitus: Tämä sovellus ei toimi kunnolla Firefoxissa. Käytä Chromea, Edgeä tai Safaria parhaan kokemuksen saamiseksi.",
     firefoxWarningShort: "Firefox ei ole tuettu",
     // Mobile Chrome warning
-    mobileChromeWarning: "Litterointi mobiili Chromessa ei välttämättä toimi odotetulla tavalla. Jotkut sanat saattavat kopioitua tai jäädä pois. Parhaiden tulosten saamiseksi puhu lyhyitä lauseita ja pidä taukoja lauseiden välillä.",
-    mobileChromeWarningShort: "Mobiili Chrome litterointi voi olla epäluotettava",
+    mobileChromeWarning: "Litterointi mobiililaitteilla Chromessa ei välttämättä toimi odotetulla tavalla. Jotkut sanat saattavat kopioitua tai jäädä pois. Parhaiden tulosten saamiseksi suosi tietokoneversiota tai puhu lyhyitä lauseita ja pidä taukoja lauseiden välillä.",
+    mobileChromeWarningShort: "Mobiililaitteilla litterointi voi olla epäluotettava",
     // Audio device selection
     audioInputDevice: "Äänen sisääntulo",
     selectAudioDevice: "Valitse äänen sisääntulolaite",
