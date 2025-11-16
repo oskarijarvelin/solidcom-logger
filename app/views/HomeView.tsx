@@ -22,6 +22,7 @@ type Commands = {
 type MessageLogEntry = {
   text: string;
   timestamp: string;
+  createdAt: Date;
 };
 
 // Export the MicrophoneComponent function component
@@ -47,6 +48,24 @@ export default function MicrophoneComponent() {
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const seconds = date.getSeconds().toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
+  };
+
+  // Helper function to get relative time
+  const getRelativeTime = (createdAt: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - createdAt.getTime();
+    
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    
+    if (diffSeconds < 60) {
+      return diffSeconds <= 1 ? 'just now' : `${diffSeconds} seconds ago`;
+    } else if (diffMinutes < 60) {
+      return diffMinutes === 1 ? '1 minute ago' : `${diffMinutes} minutes ago`;
+    } else {
+      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+    }
   };
 
   // Predefined commands
@@ -78,8 +97,9 @@ export default function MicrophoneComponent() {
 
       // If the result is final, add it to the message log (newest first)
       if (isFinal && transcript.trim()) {
-        const timestamp = formatTimestamp(new Date());
-        setMessageLog(prev => [{ text: transcript, timestamp }, ...prev]);
+        const now = new Date();
+        const timestamp = formatTimestamp(now);
+        setMessageLog(prev => [{ text: transcript, timestamp, createdAt: now }, ...prev]);
       }
 
       // Check for predefined commands
@@ -138,6 +158,19 @@ export default function MicrophoneComponent() {
       }
     };
   }, []);
+
+  // Effect to update relative time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force re-render by updating a state that doesn't affect display
+      // This will cause getRelativeTime to be recalculated for all messages
+      if (messageLog.length > 0) {
+        setMessageLog(prev => [...prev]); // Trigger re-render without changing data
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [messageLog.length]);
 
   // Function to stop transcription
   const stopTranscription = () => {
@@ -216,6 +249,30 @@ export default function MicrophoneComponent() {
     }
   };
 
+  // Get spacing class based on font size
+  const getSpacingClass = () => {
+    switch (fontSize) {
+      case "small":
+        return "space-y-2";
+      case "large":
+        return "space-y-4";
+      default:
+        return "space-y-2";
+    }
+  };
+
+  // Get padding bottom class based on font size
+  const getPaddingBottomClass = () => {
+    switch (fontSize) {
+      case "small":
+        return "pb-2";
+      case "large":
+        return "pb-4";
+      default:
+        return "pb-2";
+    }
+  };
+
   // Render the microphone component with appropriate UI based on transcription state
   return (
     <>
@@ -230,24 +287,24 @@ export default function MicrophoneComponent() {
         onClose={() => setIsSettingsOpen(false)}
       />
 
-      <div className="flex items-center justify-center h-screen w-full pt-16">
-        <div className="w-full px-4">
+      <div className="flex flex-col h-screen w-full pt-16">
+        <div className="w-full px-4 flex-1 flex flex-col">
           {/* Message Log Display */}
           {messageLog.length > 0 && (
-            <div className="max-w-3xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 mt-4 max-h-96 overflow-y-auto">
+            <div className="w-full md:max-w-7xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 my-4 flex-1 overflow-y-auto">
               <h3 className={`font-md font-semibold mb-3 text-gray-900 dark:text-white`}>
                 {t("messageLog")}
               </h3>
-              <div className="space-y-4">
+              <div className={getSpacingClass()}>
                 {messageLog.map((entry, index) => (
-                  <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
-                    <div className="flex justify-between items-start gap-4">
-                      <p className={`${getFontSizeClass()} flex-1 text-gray-900 dark:text-white`}>
+                  <div key={index} className={`border-b border-gray-200 dark:border-gray-700 ${getPaddingBottomClass()} last:border-b-0`}>
+                    <div className="flex flex-col gap-2">
+                      <span className={`text-xs text-gray-500 dark:text-gray-400`}>
+                        {entry.timestamp} • {getRelativeTime(entry.createdAt)}
+                      </span>
+                      <p className={`${getFontSizeClass()} text-gray-900 dark:text-white`}>
                         {highlightKeywords(entry.text)}
                       </p>
-                      <span className={`text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap`}>
-                        {entry.timestamp}
-                      </span>
                     </div>
                   </div>
                 ))}
@@ -255,40 +312,6 @@ export default function MicrophoneComponent() {
             </div>
           )}
 
-          <div className="flex items-center w-full">
-            {isTranscribing ? (
-              // Button for stopping transcription
-              <button
-                onClick={handleToggleTranscription}
-                className="mt-10 m-auto flex items-center justify-center bg-red-400 hover:bg-red-500 rounded-full w-20 h-20 focus:outline-none"
-              >
-                <svg
-                  className="h-12 w-12 "
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path fill="white" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
-              </button>
-            ) : (
-              // Button for starting transcription
-              <button
-                onClick={handleToggleTranscription}
-                className="mt-10 m-auto flex items-center justify-center bg-blue-400 hover:bg-blue-500 rounded-full w-20 h-20 focus:outline-none"
-              >
-                <svg
-                  viewBox="0 0 256 256"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-12 h-12 text-white"
-                >
-                  <path
-                    fill="currentColor" // Change fill color to the desired color
-                    d="M128 176a48.05 48.05 0 0 0 48-48V64a48 48 0 0 0-96 0v64a48.05 48.05 0 0 0 48 48ZM96 64a32 32 0 0 1 64 0v64a32 32 0 0 1-64 0Zm40 143.6V232a8 8 0 0 1-16 0v-24.4A80.11 80.11 0 0 1 48 128a8 8 0 0 1 16 0a64 64 0 0 0 128 0a8 8 0 0 1 16 0a80.11 80.11 0 0 1-72 79.6Z"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </>
