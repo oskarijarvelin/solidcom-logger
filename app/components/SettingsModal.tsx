@@ -20,11 +20,12 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsModalProps) {
-  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, audioChannelCount, setAudioChannelCount, t } = useSettings();
+  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, audioChannelCount, setAudioChannelCount, audioChannelIndex, setAudioChannelIndex, t } = useSettings();
   const [newKeyword, setNewKeyword] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const [maxChannels, setMaxChannels] = useState(16); // Default max channels for multi-input devices
 
   // Enumerate audio input devices when modal opens
   useEffect(() => {
@@ -48,6 +49,37 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
       enumerateDevices();
     }
   }, [isOpen]);
+
+  // Detect channel capabilities when device changes
+  useEffect(() => {
+    if (audioInputDeviceId && permissionGranted) {
+      const detectChannelCapabilities = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: { deviceId: { exact: audioInputDeviceId } }
+          });
+          
+          // Get the audio track to check its capabilities
+          const audioTrack = stream.getAudioTracks()[0];
+          const settings = audioTrack.getSettings();
+          
+          // Check if channelCount is available in settings
+          if (settings.channelCount) {
+            setMaxChannels(settings.channelCount);
+          }
+          
+          // Stop the stream
+          stream.getTracks().forEach(track => track.stop());
+        } catch (error) {
+          console.error('Error detecting channel capabilities:', error);
+          // Default to 16 channels for multi-input devices
+          setMaxChannels(16);
+        }
+      };
+      
+      detectChannelCapabilities();
+    }
+  }, [audioInputDeviceId, permissionGranted]);
 
   if (!isOpen) return null;
 
@@ -305,6 +337,30 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
                 {t("stereo")}
               </button>
             </div>
+          </div>
+
+          {/* Channel Selection for Multi-Input Devices */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("audioChannelIndex")}
+            </label>
+            <select
+              value={audioChannelIndex}
+              onChange={(e) => setAudioChannelIndex(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value={0}>{t("allChannels")}</option>
+              {Array.from({ length: maxChannels }, (_, i) => i + 1).map((channelNum) => (
+                <option key={channelNum} value={channelNum}>
+                  {t("channelNumber")} {channelNum}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {maxChannels > 2 
+                ? `${t("audioInputDevice")} supports up to ${maxChannels} channels`
+                : "Select a specific channel for multi-input devices"}
+            </p>
           </div>
 
           {/* Keyword Highlighting */}
