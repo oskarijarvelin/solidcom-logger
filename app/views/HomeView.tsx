@@ -165,14 +165,6 @@ export default function MicrophoneComponent() {
       // Log the recognition results and update the transcript state
       //console.log(event.results);
       
-      // Show accumulated text + current transcript in real-time display
-      // This helps users see the complete sentence being built up before it's saved to the log
-      if (accumulatedTranscriptRef.current) {
-        setTranscriptionText(accumulatedTranscriptRef.current + " " + transcript);
-      } else {
-        setTranscriptionText(transcript);
-      }
-
       // If the result is final, use debounce logic to group words into complete sentences
       // This is especially important on mobile Chrome which treats each word as final
       if (isFinal && transcript.trim()) {
@@ -188,6 +180,9 @@ export default function MicrophoneComponent() {
         } else {
           accumulatedTranscriptRef.current = transcript.trim();
         }
+        
+        // Show the accumulated text (which now includes this final result)
+        setTranscriptionText(accumulatedTranscriptRef.current);
 
         // Set a debounce timer to add the accumulated transcript to the message log
         // Wait 1.5 seconds after the last final result before committing to the log
@@ -215,6 +210,13 @@ export default function MicrophoneComponent() {
           }
           debounceTimerRef.current = null;
         }, 1500);
+      } else {
+        // For interim results, show accumulated text + current interim transcript
+        if (accumulatedTranscriptRef.current) {
+          setTranscriptionText(accumulatedTranscriptRef.current + " " + transcript);
+        } else {
+          setTranscriptionText(transcript);
+        }
       }
     };
 
