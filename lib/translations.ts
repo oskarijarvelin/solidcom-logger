@@ -40,6 +40,9 @@ export const translations = {
     // Firefox warning
     firefoxWarning: "Warning: This application does not work properly in Firefox. Please use Chrome, Edge, or Safari for the best experience.",
     firefoxWarningShort: "Firefox is not supported",
+    // Mobile Chrome warning
+    mobileChromeWarning: "Transcription on mobile Chrome may not work as expected. Some words might be duplicated or missed. For best results, speak in short phrases and pause between sentences.",
+    mobileChromeWarningShort: "Mobile Chrome transcription may be unreliable",
     // Audio device selection
     audioInputDevice: "Audio Input Device",
     selectAudioDevice: "Select audio input device",
@@ -98,6 +101,9 @@ export const translations = {
     // Firefox warning
     firefoxWarning: "Varoitus: Tämä sovellus ei toimi kunnolla Firefoxissa. Käytä Chromea, Edgeä tai Safaria parhaan kokemuksen saamiseksi.",
     firefoxWarningShort: "Firefox ei ole tuettu",
+    // Mobile Chrome warning
+    mobileChromeWarning: "Litterointi mobiili Chromessa ei välttämättä toimi odotetulla tavalla. Jotkut sanat saattavat kopioitua tai jäädä pois. Parhaiden tulosten saamiseksi puhu lyhyitä lauseita ja pidä taukoja lauseiden välillä.",
+    mobileChromeWarningShort: "Mobiili Chrome litterointi voi olla epäluotettava",
     // Audio device selection
     audioInputDevice: "Äänen sisääntulo",
     selectAudioDevice: "Valitse äänen sisääntulolaite",

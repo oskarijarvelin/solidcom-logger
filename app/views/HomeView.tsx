@@ -38,6 +38,8 @@ export default function MicrophoneComponent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFirefox, setIsFirefox] = useState(false);
   const [showFirefoxWarning, setShowFirefoxWarning] = useState(true);
+  const [isMobileChrome, setIsMobileChrome] = useState(false);
+  const [showMobileChromeWarning, setShowMobileChromeWarning] = useState(true);
 
   // Reference to store the SpeechRecognition instance
   const recognitionRef = useRef<any>(null);
@@ -174,12 +176,29 @@ export default function MicrophoneComponent() {
           clearTimeout(debounceTimerRef.current);
         }
 
-        // Accumulate the transcript
-        if (accumulatedTranscriptRef.current) {
-          // Add space if we already have accumulated text
-          accumulatedTranscriptRef.current += " " + transcript.trim();
+        // Check if the new transcript is cumulative (contains the accumulated text)
+        // This happens on some mobile Chrome versions where each final result includes previous words
+        const newTranscript = transcript.trim();
+        const accumulated = accumulatedTranscriptRef.current.trim();
+        
+        if (accumulated && newTranscript.startsWith(accumulated)) {
+          // Extract only the new part of the transcript
+          const newPart = newTranscript.substring(accumulated.length).trim();
+          if (newPart) {
+            accumulatedTranscriptRef.current = accumulated + " " + newPart;
+          }
+          // If no new part, it's a duplicate - just keep the accumulated text
+        } else if (accumulated && newTranscript.includes(accumulated)) {
+          // If accumulated text is somewhere in the new transcript but not at the start,
+          // it might be a reordering or duplicate - replace with the new transcript
+          accumulatedTranscriptRef.current = newTranscript;
         } else {
-          accumulatedTranscriptRef.current = transcript.trim();
+          // Normal accumulation: add the new transcript to accumulated text
+          if (accumulated) {
+            accumulatedTranscriptRef.current = accumulated + " " + newTranscript;
+          } else {
+            accumulatedTranscriptRef.current = newTranscript;
+          }
         }
         
         // Don't show accumulated final results in real-time display to avoid duplication
@@ -307,6 +326,15 @@ export default function MicrophoneComponent() {
   useEffect(() => {
     const isFirefoxBrowser = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
     setIsFirefox(isFirefoxBrowser);
+  }, []);
+
+  // Detect mobile Chrome browser
+  useEffect(() => {
+    const isMobileChromeBrowser = typeof navigator !== 'undefined' && 
+      /Android/i.test(navigator.userAgent) && 
+      /Chrome/i.test(navigator.userAgent) && 
+      !/Edge/i.test(navigator.userAgent);
+    setIsMobileChrome(isMobileChromeBrowser);
   }, []);
 
   // Effect to update relative time every second
@@ -478,6 +506,36 @@ export default function MicrophoneComponent() {
                   aria-label="Close warning"
                 >
                   <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Mobile Chrome Warning */}
+          {isMobileChrome && showMobileChromeWarning && (
+            <div className="w-full md:max-w-7xl m-auto bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-md p-4 m-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <svg className="w-6 h-6 text-orange-600 dark:text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-orange-800 dark:text-orange-400 mb-1">
+                      {t("mobileChromeWarningShort")}
+                    </h3>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      {t("mobileChromeWarning")}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMobileChromeWarning(false)}
+                  className="p-1 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-800/30 transition-colors flex-shrink-0"
+                  aria-label="Close warning"
+                >
+                  <svg className="w-5 h-5 text-orange-600 dark:text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
