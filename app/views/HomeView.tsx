@@ -485,18 +485,6 @@ export default function MicrophoneComponent() {
             </div>
           )}
           
-          {/* Real-time Transcription Display */}
-          {isTranscribing && transcriptionText && (
-            <div className="w-full md:max-w-7xl m-auto rounded-md border border-blue-200 dark:border-blue-700 p-4 bg-blue-50 dark:bg-blue-900/20 my-4">
-              <h3 className={`font-md font-semibold mb-3 text-blue-900 dark:text-blue-300`}>
-                {t("currentTranscription")}
-              </h3>
-              <p className={`${getFontSizeClass()} text-blue-900 dark:text-blue-100`}>
-                {highlightKeywords(transcriptionText)}
-              </p>
-            </div>
-          )}
-          
           {/* Message Log Display */}
           {messageLog.length > 0 && (
             <div className="w-full md:max-w-7xl m-auto rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 my-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 64px - 2rem)' }}>
