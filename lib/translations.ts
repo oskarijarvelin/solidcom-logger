@@ -60,6 +60,17 @@ export const translations = {
     downloadAsPdf: "Download as PDF",
     noMessagesToDownload: "No messages to download",
     viewOnGitHub: "View on GitHub",
+    // Transcription service
+    transcriptionService: "Transcription Service",
+    webSpeechAPI: "Web Speech API (Browser)",
+    openAITranscription: "OpenAI GPT-4o (Requires API Key)",
+    mistralAITranscription: "Mistral AI Voxtral-mini (Requires API Key)",
+    apiKeys: "API Keys",
+    openAIAPIKey: "OpenAI API Key",
+    mistralAPIKey: "Mistral AI API Key",
+    apiKeyPlaceholder: "Enter your API key",
+    apiKeyHelp: "API keys are stored in your browser and never sent to our servers",
+    apiKeyRequired: "API key is required for this service",
   },
   fi: {
     appName: "Intercom Logger",
@@ -121,6 +132,17 @@ export const translations = {
     downloadAsPdf: "Lataa PDF-muodossa",
     noMessagesToDownload: "Ei ladattavia viestejä",
     viewOnGitHub: "Näytä GitHubissa",
+    // Transcription service
+    transcriptionService: "Puheentunnistuspalvelu",
+    webSpeechAPI: "Web Speech API (Selain)",
+    openAITranscription: "OpenAI GPT-4o (Vaatii API-avaimen)",
+    mistralAITranscription: "Mistral AI Voxtral-mini (Vaatii API-avaimen)",
+    apiKeys: "API-avaimet",
+    openAIAPIKey: "OpenAI API-avain",
+    mistralAPIKey: "Mistral AI API-avain",
+    apiKeyPlaceholder: "Syötä API-avaimesi",
+    apiKeyHelp: "API-avaimet tallennetaan selaimeesi, eikä niitä lähetetä palvelimillemme",
+    apiKeyRequired: "API-avain vaaditaan tälle palvelulle",
   },
 };
 

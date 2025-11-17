@@ -20,7 +20,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsModalProps) {
-  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, audioChannelCount, setAudioChannelCount, audioChannelIndex, setAudioChannelIndex, t } = useSettings();
+  const { language, setLanguage, theme, setTheme, fontSize, setFontSize, keywords, addKeyword, removeKeyword, audioInputDeviceId, setAudioInputDeviceId, audioChannelCount, setAudioChannelCount, audioChannelIndex, setAudioChannelIndex, transcriptionService, setTranscriptionService, openaiApiKey, setOpenaiApiKey, mistralApiKey, setMistralApiKey, t } = useSettings();
   const [newKeyword, setNewKeyword] = useState("");
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -216,6 +216,102 @@ export default function SettingsModal({ isOpen, onClose, messageLog }: SettingsM
               </button>
             </div>
           </div>
+
+          {/* Transcription Service Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t("transcriptionService")}
+            </label>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setTranscriptionService("webspeech")}
+                className={`px-4 py-3 rounded-lg border transition-colors text-left ${
+                  transcriptionService === "webspeech"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                }`}
+              >
+                <div className="font-medium">{t("webSpeechAPI")}</div>
+                <div className={`text-sm mt-1 ${transcriptionService === "webspeech" ? "text-blue-100" : "text-gray-500 dark:text-gray-400"}`}>
+                  Free, browser-based transcription
+                </div>
+              </button>
+              <button
+                onClick={() => setTranscriptionService("openai")}
+                className={`px-4 py-3 rounded-lg border transition-colors text-left ${
+                  transcriptionService === "openai"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                }`}
+              >
+                <div className="font-medium">{t("openAITranscription")}</div>
+                <div className={`text-sm mt-1 ${transcriptionService === "openai" ? "text-blue-100" : "text-gray-500 dark:text-gray-400"}`}>
+                  High-quality AI transcription
+                </div>
+              </button>
+              <button
+                onClick={() => setTranscriptionService("mistral")}
+                className={`px-4 py-3 rounded-lg border transition-colors text-left ${
+                  transcriptionService === "mistral"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                }`}
+              >
+                <div className="font-medium">{t("mistralAITranscription")}</div>
+                <div className={`text-sm mt-1 ${transcriptionService === "mistral" ? "text-blue-100" : "text-gray-500 dark:text-gray-400"}`}>
+                  Fast and efficient transcription
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* API Keys Section */}
+          {(transcriptionService === "openai" || transcriptionService === "mistral") && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-3">
+                {t("apiKeys")}
+              </h3>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mb-4">
+                {t("apiKeyHelp")}
+              </p>
+              
+              {transcriptionService === "openai" && (
+                <div>
+                  <label className="block text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-2">
+                    {t("openAIAPIKey")}
+                  </label>
+                  <input
+                    type="password"
+                    value={openaiApiKey}
+                    onChange={(e) => setOpenaiApiKey(e.target.value)}
+                    placeholder={t("apiKeyPlaceholder")}
+                    className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                    Get your API key from: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline">platform.openai.com/api-keys</a>
+                  </p>
+                </div>
+              )}
+              
+              {transcriptionService === "mistral" && (
+                <div>
+                  <label className="block text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-2">
+                    {t("mistralAPIKey")}
+                  </label>
+                  <input
+                    type="password"
+                    value={mistralApiKey}
+                    onChange={(e) => setMistralApiKey(e.target.value)}
+                    placeholder={t("apiKeyPlaceholder")}
+                    className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                    Get your API key from: <a href="https://console.mistral.ai/api-keys/" target="_blank" rel="noopener noreferrer" className="underline">console.mistral.ai/api-keys</a>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Theme Selection */}
           <div>

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Language, translations, TranslationKey } from "@/lib/translations";
 import { KeywordHighlight } from "@/lib/colors";
 
+export type TranscriptionService = "webspeech" | "openai" | "mistral";
+
 interface SettingsContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -21,6 +23,12 @@ interface SettingsContextType {
   setAudioChannelCount: (count: number) => void;
   audioChannelIndex: number;
   setAudioChannelIndex: (index: number) => void;
+  transcriptionService: TranscriptionService;
+  setTranscriptionService: (service: TranscriptionService) => void;
+  openaiApiKey: string;
+  setOpenaiApiKey: (key: string) => void;
+  mistralApiKey: string;
+  setMistralApiKey: (key: string) => void;
   t: (key: TranslationKey) => string;
 }
 
@@ -34,6 +42,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [audioInputDeviceId, setAudioInputDeviceId] = useState<string>("");
   const [audioChannelCount, setAudioChannelCount] = useState<number>(1);
   const [audioChannelIndex, setAudioChannelIndex] = useState<number>(0);
+  const [transcriptionService, setTranscriptionService] = useState<TranscriptionService>("webspeech");
+  const [openaiApiKey, setOpenaiApiKey] = useState<string>("");
+  const [mistralApiKey, setMistralApiKey] = useState<string>("");
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -44,6 +55,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const savedAudioInputDeviceId = localStorage.getItem("audioInputDeviceId");
     const savedAudioChannelCount = localStorage.getItem("audioChannelCount");
     const savedAudioChannelIndex = localStorage.getItem("audioChannelIndex");
+    const savedTranscriptionService = localStorage.getItem("transcriptionService") as TranscriptionService;
+    const savedOpenaiApiKey = localStorage.getItem("openaiApiKey");
+    const savedMistralApiKey = localStorage.getItem("mistralApiKey");
 
     if (savedLanguage) setLanguage(savedLanguage);
     if (savedTheme) setTheme(savedTheme);
@@ -52,6 +66,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (savedAudioInputDeviceId) setAudioInputDeviceId(savedAudioInputDeviceId);
     if (savedAudioChannelCount) setAudioChannelCount(parseInt(savedAudioChannelCount));
     if (savedAudioChannelIndex) setAudioChannelIndex(parseInt(savedAudioChannelIndex));
+    if (savedTranscriptionService) setTranscriptionService(savedTranscriptionService);
+    if (savedOpenaiApiKey) setOpenaiApiKey(savedOpenaiApiKey);
+    if (savedMistralApiKey) setMistralApiKey(savedMistralApiKey);
   }, []);
 
   // Save settings to localStorage
@@ -89,6 +106,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("audioChannelIndex", audioChannelIndex.toString());
   }, [audioChannelIndex]);
 
+  useEffect(() => {
+    localStorage.setItem("transcriptionService", transcriptionService);
+  }, [transcriptionService]);
+
+  useEffect(() => {
+    localStorage.setItem("openaiApiKey", openaiApiKey);
+  }, [openaiApiKey]);
+
+  useEffect(() => {
+    localStorage.setItem("mistralApiKey", mistralApiKey);
+  }, [mistralApiKey]);
+
   const addKeyword = (keyword: KeywordHighlight) => {
     setKeywords([...keywords, keyword]);
   };
@@ -120,6 +149,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setAudioChannelCount,
         audioChannelIndex,
         setAudioChannelIndex,
+        transcriptionService,
+        setTranscriptionService,
+        openaiApiKey,
+        setOpenaiApiKey,
+        mistralApiKey,
+        setMistralApiKey,
         t,
       }}
     >

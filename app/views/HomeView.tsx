@@ -2,6 +2,7 @@
 // Import necessary modules and components
 import { useEffect, useState, useRef } from "react";
 import { useSettings } from "@/lib/SettingsContext";
+import { createTranscriptionService, TranscriptionService } from "@/lib/transcriptionServices";
 import Header from "../components/Header";
 import SettingsModal from "../components/SettingsModal";
 
@@ -28,7 +29,7 @@ type MessageLogEntry = {
 // Export the MicrophoneComponent function component
 export default function MicrophoneComponent() {
   // Settings context
-  const { language, fontSize, keywords, audioInputDeviceId, audioChannelCount, audioChannelIndex, t } = useSettings();
+  const { language, fontSize, keywords, audioInputDeviceId, audioChannelCount, audioChannelIndex, transcriptionService, openaiApiKey, mistralApiKey, t } = useSettings();
   
   // State variables to manage transcription status and text
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -41,8 +42,8 @@ export default function MicrophoneComponent() {
   const [isMobileChrome, setIsMobileChrome] = useState(false);
   const [showMobileChromeWarning, setShowMobileChromeWarning] = useState(true);
 
-  // Reference to store the SpeechRecognition instance
-  const recognitionRef = useRef<any>(null);
+  // Reference to store the TranscriptionService instance
+  const transcriptionServiceRef = useRef<TranscriptionService | null>(null);
   // Reference to track if we should be transcribing (for auto-restart logic)
   const shouldTranscribeRef = useRef(false);
   // Reference to accumulate transcript before adding to message log (for mobile device debouncing)
@@ -88,195 +89,127 @@ export default function MicrophoneComponent() {
     setIsTranscribing(true);
     shouldTranscribeRef.current = true;
     
-    // Request permission for the selected audio device with channel count
-    // This ensures the browser uses the correct microphone and channel configuration for speech recognition
-    try {
-      const audioConstraints: MediaTrackConstraints = audioInputDeviceId 
-        ? { deviceId: { exact: audioInputDeviceId }, channelCount: audioChannelCount }
-        : { channelCount: audioChannelCount };
-      
-      const constraints: MediaStreamConstraints = {
-        audio: audioConstraints
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      // If a specific channel is selected (audioChannelIndex > 0), use Web Audio API to extract it
-      if (audioChannelIndex > 0 && typeof AudioContext !== 'undefined') {
-        try {
-          const audioContext = new AudioContext();
-          const source = audioContext.createMediaStreamSource(stream);
-          
-          // Create a channel splitter to extract specific channel
-          const splitter = audioContext.createChannelSplitter(stream.getAudioTracks()[0].getSettings().channelCount || audioChannelCount);
-          
-          // Create a merger to create a new mono stream from the selected channel
-          const merger = audioContext.createChannelMerger(1);
-          
-          // Connect the selected channel (audioChannelIndex - 1 because it's 0-indexed)
-          source.connect(splitter);
-          // Connect the specific channel to the merger
-          // Note: audioChannelIndex is 1-based, so we subtract 1 for 0-based array
-          const channelIndexToUse = Math.min(audioChannelIndex - 1, (stream.getAudioTracks()[0].getSettings().channelCount || audioChannelCount) - 1);
-          splitter.connect(merger, channelIndexToUse, 0);
-          
-          // Create a destination to get the processed stream
-          const destination = audioContext.createMediaStreamDestination();
-          merger.connect(destination);
-          
-          // Stop the original stream
-          stream.getTracks().forEach(track => track.stop());
-          
-          // Use the processed stream (note: Web Speech API may not support this approach in all browsers)
-          // For now, we'll just stop it and continue with the original approach
-          // The channel selection will be informational for the user
-          destination.stream.getTracks().forEach(track => track.stop());
-          audioContext.close();
-        } catch (error) {
-          console.error('Error processing audio channel:', error);
-        }
+    // Get the API key if needed
+    let apiKey = '';
+    if (transcriptionService === 'openai') {
+      apiKey = openaiApiKey || process.env.NEXT_PUBLIC_OPENAI_API_KEY || '';
+      if (!apiKey) {
+        alert(t("apiKeyRequired"));
+        setIsTranscribing(false);
+        shouldTranscribeRef.current = false;
+        return;
       }
-      
-      // Stop the stream immediately as we only needed to set the active device
-      stream.getTracks().forEach(track => track.stop());
-    } catch (error) {
-      console.error('Error accessing audio device:', error);
-      // Continue anyway with default device
+    } else if (transcriptionService === 'mistral') {
+      apiKey = mistralApiKey || process.env.NEXT_PUBLIC_MISTRAL_API_KEY || '';
+      if (!apiKey) {
+        alert(t("apiKeyRequired"));
+        setIsTranscribing(false);
+        shouldTranscribeRef.current = false;
+        return;
+      }
     }
     
-    // Create a new SpeechRecognition instance (feature detected) and configure it
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.error('SpeechRecognition API not supported in this browser.');
+    // Create transcription service
+    transcriptionServiceRef.current = createTranscriptionService(transcriptionService, apiKey);
+    
+    // Check if service is supported
+    if (!transcriptionServiceRef.current.isSupported()) {
+      console.error('Selected transcription service is not supported');
+      alert('Selected transcription service is not supported in this browser or API key is missing.');
       setIsTranscribing(false);
       shouldTranscribeRef.current = false;
       return;
     }
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = true;
-    // Set language based on user settings
-    recognitionRef.current.lang = language === "fi" ? "fi-FI" : "en-US";
-    recognitionRef.current.interimResults = true;
-    // Set maxAlternatives for better accuracy on mobile devices
-    recognitionRef.current.maxAlternatives = 1;
-
-    // Event handler for speech recognition results
-    recognitionRef.current.onresult = (event: any) => {
-      const lastResult = event.results[event.results.length - 1];
-      const { transcript } = lastResult[0];
-      const isFinal = lastResult.isFinal;
-
-      // Log the recognition results and update the transcript state
-      //console.log(event.results);
+    
+    // Handle transcription results
+    const handleResult = (result: { text: string; isFinal: boolean }) => {
+      const { text, isFinal } = result;
       
-      // If the result is final, use debounce logic to group words into complete sentences
-      // This is especially important on mobile Chrome which treats each word as final
-      if (isFinal && transcript.trim()) {
+      if (isFinal && text.trim()) {
         // Clear any existing debounce timer
         if (debounceTimerRef.current) {
           clearTimeout(debounceTimerRef.current);
         }
 
-        // Check if the new transcript is cumulative (contains the accumulated text)
-        // This happens on some mobile Chrome versions where each final result includes previous words
-        const newTranscript = transcript.trim();
-        const accumulated = accumulatedTranscriptRef.current.trim();
-        
-        if (accumulated && newTranscript.startsWith(accumulated)) {
-          // Extract only the new part of the transcript
-          const newPart = newTranscript.substring(accumulated.length).trim();
-          if (newPart) {
-            accumulatedTranscriptRef.current = accumulated + " " + newPart;
-          }
-          // If no new part, it's a duplicate - just keep the accumulated text
-        } else if (accumulated && newTranscript.includes(accumulated)) {
-          // If accumulated text is somewhere in the new transcript but not at the start,
-          // it might be a reordering or duplicate - replace with the new transcript
-          accumulatedTranscriptRef.current = newTranscript;
-        } else {
-          // Normal accumulation: add the new transcript to accumulated text
-          if (accumulated) {
-            accumulatedTranscriptRef.current = accumulated + " " + newTranscript;
-          } else {
+        // For Web Speech API, use accumulation logic
+        // For OpenAI and Mistral, each result is already complete
+        if (transcriptionService === 'webspeech') {
+          const newTranscript = text.trim();
+          const accumulated = accumulatedTranscriptRef.current.trim();
+          
+          if (accumulated && newTranscript.startsWith(accumulated)) {
+            const newPart = newTranscript.substring(accumulated.length).trim();
+            if (newPart) {
+              accumulatedTranscriptRef.current = accumulated + " " + newPart;
+            }
+          } else if (accumulated && newTranscript.includes(accumulated)) {
             accumulatedTranscriptRef.current = newTranscript;
+          } else {
+            if (accumulated) {
+              accumulatedTranscriptRef.current = accumulated + " " + newTranscript;
+            } else {
+              accumulatedTranscriptRef.current = newTranscript;
+            }
           }
-        }
-        
-        // Don't show accumulated final results in real-time display to avoid duplication
-        // The accumulated text will be added to message log by the debounce timer
-        // This prevents Mobile Chrome from showing: "Hello", "Hello world", "Hello world how", etc.
-        setTranscriptionText("");
+          
+          setTranscriptionText("");
 
-        // Set a debounce timer to add the accumulated transcript to the message log
-        // Wait 1.5 seconds after the last final result before committing to the log
-        // This groups words into complete sentences on mobile devices
-        debounceTimerRef.current = setTimeout(() => {
-          const accumulatedText = accumulatedTranscriptRef.current.trim();
-          if (accumulatedText) {
-            const now = new Date();
-            const timestamp = formatTimestamp(now);
-            setMessageLog(prev => [{ text: accumulatedText, timestamp, createdAt: now }, ...prev]);
-            
-            // Check for predefined commands
-            for (const command in commands) {
-              if (accumulatedText.toLowerCase().includes(command)) {
-                commands[command]();
-                break;
+          // Set debounce timer for Web Speech API
+          debounceTimerRef.current = setTimeout(() => {
+            const accumulatedText = accumulatedTranscriptRef.current.trim();
+            if (accumulatedText) {
+              const now = new Date();
+              const timestamp = formatTimestamp(now);
+              setMessageLog(prev => [{ text: accumulatedText, timestamp, createdAt: now }, ...prev]);
+              
+              // Check for predefined commands
+              for (const command in commands) {
+                if (accumulatedText.toLowerCase().includes(command)) {
+                  commands[command]();
+                  break;
+                }
               }
+              
+              accumulatedTranscriptRef.current = "";
             }
-            
-            // Clear the accumulated transcript
-            accumulatedTranscriptRef.current = "";
-          }
-          debounceTimerRef.current = null;
-        }, 1500);
-      } else {
-        // For interim results, show the current interim transcript only
-        // Don't include accumulated text to avoid duplication
-        setTranscriptionText(transcript);
-      }
-    };
-
-    // Event handler for errors to prevent freezing
-    recognitionRef.current.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-      // Auto-restart on certain errors if still transcribing
-      // Note: 'aborted' error is common on mobile devices and should trigger restart
-      if (event.error === 'no-speech' || event.error === 'audio-capture' || event.error === 'network' || event.error === 'aborted') {
-        console.log('Attempting to restart recognition due to:', event.error);
-        // Use longer delay (1000ms) for better mobile device compatibility
-        // Mobile browsers need more time between recognition sessions
-        setTimeout(() => {
-          if (recognitionRef.current && shouldTranscribeRef.current) {
-            try {
-              recognitionRef.current.start();
-            } catch (e) {
-              console.error('Failed to restart recognition:', e);
+            debounceTimerRef.current = null;
+          }, 1500);
+        } else {
+          // For OpenAI and Mistral, add directly to message log
+          const now = new Date();
+          const timestamp = formatTimestamp(now);
+          setMessageLog(prev => [{ text: text, timestamp, createdAt: now }, ...prev]);
+          
+          // Check for predefined commands
+          for (const command in commands) {
+            if (text.toLowerCase().includes(command)) {
+              commands[command]();
+              break;
             }
           }
-        }, 1000);
+          
+          setTranscriptionText("");
+        }
+      } else if (!isFinal) {
+        // Show interim results
+        setTranscriptionText(text);
       }
     };
-
-    // Event handler for when recognition ends unexpectedly
-    recognitionRef.current.onend = () => {
-      console.log('Speech recognition ended');
-      // Auto-restart if we're still supposed to be transcribing
-      if (shouldTranscribeRef.current && recognitionRef.current) {
-        console.log('Auto-restarting recognition...');
-        // Use longer delay (1000ms) for better mobile device compatibility
-        // Mobile browsers need more time between recognition sessions
-        setTimeout(() => {
-          try {
-            recognitionRef.current.start();
-          } catch (e) {
-            console.error('Failed to restart recognition:', e);
-          }
-        }, 1000);
-      }
+    
+    // Handle transcription errors
+    const handleError = (error: any) => {
+      console.error('Transcription error:', error);
     };
-
-    // Start the speech recognition
-    recognitionRef.current.start();
+    
+    // Start the transcription service
+    try {
+      transcriptionServiceRef.current.start(language, handleResult, handleError);
+    } catch (error) {
+      console.error('Error starting transcription:', error);
+      alert('Failed to start transcription. Please check your settings and try again.');
+      setIsTranscribing(false);
+      shouldTranscribeRef.current = false;
+    }
   };
 
   // Cleanup effect when the component unmounts
@@ -286,16 +219,16 @@ export default function MicrophoneComponent() {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-      // Stop the speech recognition if it's active
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      // Stop the transcription service if it's active
+      if (transcriptionServiceRef.current) {
+        transcriptionServiceRef.current.stop();
       }
     };
   }, []);
 
-  // Effect to restart speech recognition when language changes during active recording
+  // Effect to restart transcription when language changes during active recording
   useEffect(() => {
-    if (isTranscribing && recognitionRef.current) {
+    if (isTranscribing && transcriptionServiceRef.current) {
       // Clear any pending debounce timer
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -310,9 +243,9 @@ export default function MicrophoneComponent() {
         accumulatedTranscriptRef.current = "";
       }
       
-      // Stop current recognition
+      // Stop current transcription
       shouldTranscribeRef.current = false;
-      recognitionRef.current.stop();
+      transcriptionServiceRef.current.stop();
       
       // Small delay to ensure clean stop before restart
       setTimeout(() => {
@@ -352,7 +285,7 @@ export default function MicrophoneComponent() {
 
   // Function to stop transcription
   const stopTranscription = () => {
-    if (recognitionRef.current) {
+    if (transcriptionServiceRef.current) {
       // Disable auto-restart before stopping
       shouldTranscribeRef.current = false;
       
@@ -362,7 +295,7 @@ export default function MicrophoneComponent() {
         debounceTimerRef.current = null;
       }
       
-      // Flush any accumulated transcript to the message log
+      // Flush any accumulated transcript to the message log (for Web Speech API)
       if (accumulatedTranscriptRef.current.trim()) {
         const now = new Date();
         const timestamp = formatTimestamp(now);
@@ -370,8 +303,9 @@ export default function MicrophoneComponent() {
         accumulatedTranscriptRef.current = "";
       }
       
-      // Stop the speech recognition and mark transcription as complete
-      recognitionRef.current.stop();
+      // Stop the transcription service and mark transcription as complete
+      transcriptionServiceRef.current.stop();
+      transcriptionServiceRef.current = null;
       setTranscriptionComplete(true);
     }
   };
