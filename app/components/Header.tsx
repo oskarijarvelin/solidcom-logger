@@ -47,6 +47,18 @@ export default function Header({ isTranscribing, onToggleTranscription, onOpenSe
             )}
           </button>
 
+          {/* ElevenLabs Streaming Link */}
+          <a
+            href="/elevenlabs-streaming"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-500 hover:bg-purple-600 text-white shadow-lg transition-all"
+            title="Try Eleven Labs Real-time Streaming"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="font-semibold hidden sm:inline">EL Stream</span>
+          </a>
+
           {/* Settings Icon */}
           <button
             onClick={onOpenSettings}
