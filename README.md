@@ -9,7 +9,9 @@ A real-time voice-to-text transcription application built with Next.js. Perfect 
   - OpenAI GPT-4o (High-quality AI transcription, requires API key)
   - Mistral AI Voxtral-mini (Fast and efficient, requires API key)
   - Eleven Labs Scribe (High-quality speech-to-text, requires API key)
+  - **NEW:** Eleven Labs Scribe v2 Real-time Streaming (WebSocket-based, ultra-low latency, requires API key)
 - **Real-time Speech Recognition** - Automatic voice transcription
+- **WebSocket Streaming** - Ultra-low latency transcription with Eleven Labs scribe_v2_realtime
 - **Message Log** - All transcribed messages saved with timestamps in reverse chronological order
 - **Keyword Highlighting** - Highlight important keywords with custom colors
 - **Multilingual Support** - Built-in support for English and Finnish
@@ -47,7 +49,7 @@ A real-time voice-to-text transcription application built with Next.js. Perfect 
   - Get your key from: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 - **Mistral AI API Key** - Required only if using Mistral AI Voxtral-mini transcription
   - Get your key from: [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys/)
-- **Eleven Labs API Key** - Required only if using Eleven Labs Scribe transcription
+- **Eleven Labs API Key** - Required only if using Eleven Labs Scribe transcription or Real-time Streaming
   - Get your key from: [elevenlabs.io](https://elevenlabs.io/app/speech-synthesis/text-to-speech)
 
 ## Getting Started
@@ -180,6 +182,31 @@ Click the **settings icon** (⚙️) in the header to access:
    - **PDF** - Human-readable document for printing/sharing
 4. Click the download button
 
+### Using Eleven Labs Real-time Streaming
+
+For ultra-low latency transcription, use the dedicated Eleven Labs streaming page:
+
+1. Click the **"EL Stream"** button in the header (purple button with lightning icon)
+2. You'll be taken to the Eleven Labs Streaming page
+3. Make sure you have configured your Eleven Labs API key in the main settings
+4. Click **"Start Streaming"** to begin real-time transcription
+5. Allow microphone access if prompted
+6. Speak naturally - transcriptions appear with minimal delay
+7. The connection status indicator shows:
+   - **Green dot** - Connected and streaming
+   - **Yellow dot** - Connecting
+   - **Red dot** - Error
+   - **Gray dot** - Disconnected
+8. Click **"Stop Streaming"** to end the session
+9. Click **"Back to Home"** to return to the main page
+
+**Benefits of Real-time Streaming:**
+- Lower latency compared to chunked audio transcription
+- Continuous WebSocket connection for instant results
+- Interim results show what's being transcribed in real-time
+- Optimized audio processing (16kHz mono PCM)
+4. Click the download button
+
 ## Contributing
 
 We welcome contributions! Here's how to get started:
@@ -246,9 +273,11 @@ We welcome contributions! Here's how to get started:
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first styling
 - **[Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API)** - Browser-native speech recognition
+- **[Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)** - Audio processing for real-time streaming
+- **[WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** - Real-time bidirectional communication
 - **[OpenAI Whisper API](https://platform.openai.com/docs/guides/speech-to-text)** - GPT-4o based transcription
 - **[Mistral AI API](https://docs.mistral.ai/)** - Voxtral-mini transcription service
-- **[Eleven Labs API](https://elevenlabs.io/docs)** - Scribe speech-to-text service
+- **[Eleven Labs API](https://elevenlabs.io/docs)** - Scribe speech-to-text service and scribe_v2_realtime streaming
 - **[jsPDF](https://github.com/parallax/jsPDF)** - PDF generation (for export)
 
 ## Browser Compatibility
