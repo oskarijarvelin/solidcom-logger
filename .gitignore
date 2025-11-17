@@ -2,3 +2,7 @@ node_modules
 .next
 tsconfig.tsbuildinfo
 next-env.d.ts
+
+# Environment variables
+.env.local
+.env*.local
